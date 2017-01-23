@@ -2,7 +2,7 @@
 Allows for batch downloads of music from KH Insider using Selenium Webdriver. Also updates the ID3 tags and cover image of each song when downloading album. 
 
 ##Usage: 
-`./khinsider_download.py ["<regex>"] <KH Insider album URL>`
+`python khinsider_download.py ["<regex>"] <KH Insider album URL>`
 
 KH Insider's file names for their songs are incredibly inconsistent, so I've been unable to create a way to parse them universally. However, there is a pattern that is more common than others so if the song titles look like this, then the regex argument is not needed as the script's default regex will be capable of handling them.
 
@@ -49,7 +49,6 @@ EON-\d+-(.*)\.mp3 ------------> This will turn "EON-01-James-Bond-Theme.mp3" int
 * Selenium Webdriver (After installing python, run "pip install selenium" in command prompt)
 * Eyed3 (Also install using "pip install eyed3" after installing python)
 
-After downloading chromedriver, place it somewhere within your PATH so that selenium is able to find it. I typically place it inside of the Python install directory, which most commonly is C:\Python27.
-
+After downloading chromedriver, place it somewhere within your PATH so that selenium is able to find it. I typically place it inside of the Python install directory, which most commonly is C:\Python27. 
 
 
