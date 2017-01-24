@@ -1,9 +1,3 @@
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait # available since 2.4.0
-from selenium.webdriver.support import expected_conditions as EC # available since 2.26.0
-from selenium.common.exceptions import NoSuchElementException, WebDriverException, TimeoutException
-from selenium.webdriver.common.keys import Keys
-
 import shutil
 import threading
 import requests
@@ -14,6 +8,7 @@ import cPickle as pickle
 import sys
 import string
 import codecs
+from BeautifulSoup import BeautifulSoup
 
 LAST_FM_URL = "http://ws.audioscrobbler.com/2.0"
 LAST_FM_API_KEY = "f96fd5108b56d1228c5fc3a6bba4c8ee"
@@ -35,20 +30,19 @@ elif len(sys.argv) == 3:
 else:
     raise Exception("Wrong number of arguments")
 
-print "Starting Browser to get album name"
-driver = webdriver.Chrome()
-driver.get(url)
+page = requests.get(url)
+removeRe = re.compile(r"^</td>\s*$", re.MULTILINE)
+page_soup = BeautifulSoup(re.sub(removeRe, b'', page.content))
 
-center = driver.find_element_by_class_name("contentpaneopen")
-tbody = center.find_element_by_tag_name('table')
-table = tbody.find_elements_by_tag_name('tr')
+center = page_soup.find(**{'class': 'contentpaneopen'})
+tbody = center.table
 
 # Get the name of the album. Sometimes, blurbs about
 # the soundtrack are included in parentheses after 
 # the actual album title. In order for a cleaner album
 # name that will more likely get results from last.fm,
 # we get rid of any parentheses sections at the end.
-album_name = center.find_element_by_tag_name('h2').text
+album_name = center.h2.text
 clean_album_name = re.search(r"^(.*)\s\(.*$", album_name)
 if clean_album_name:
     album_name = clean_album_name.group(1)
@@ -66,28 +60,15 @@ if os.path.exists(song_cache_location):
         songs = pickle.load(f)
 else:
     print "No song cache found, crawling for songs URLS"
-    song_links = []
-
     # Get the links to the song pages and save to song_links
-    for el in table:
-        try:
-            song_link = el.find_element_by_tag_name('a')
-            anchor = song_link.get_attribute('href')
-            song_title = song_link.text
+    song_links = tbody.findAll('tr')[1:]
 
-            print "Adding '{0}' to song list".format(song_title)
-            song_links.append((song_title, anchor))
-
-        except NoSuchElementException:
-            pass
-
-    # Go to each song and find the links to the actual song files
-    for song_title, anchor in song_links:
-            driver.get(anchor)
-            page = driver.find_element_by_id('EchoTopic')
-            button = page.find_element_by_link_text('Click here to download')
-            song_url = button.get_attribute('href')
-            songs.append((song_title, song_url))
+    for tr in song_links:
+        song_res = requests.get(tr.td.a['href'])
+        song_soup = BeautifulSoup(song_res.content)
+        song_url = song_soup.find(id='EchoTopic').audio['src']
+        print "Adding '{0}' to song list".format(song_url)
+        songs.append((tr.td.text, song_url))
 
     # Create directory to store songs in. 
     # if directory exists, just keep going.
@@ -99,9 +80,6 @@ else:
     # Save the songs list to disk so that if we want to download again, selenium won't be required.
     with open(song_cache_location, "wb") as f:
         pickle.dump(songs, f)
-
-# Close the inital selenium window, no longer needed
-driver.quit()
 
 # Use last.fm to get the album artwork, if it can find it.
 print "Searching for album on last.fm"
