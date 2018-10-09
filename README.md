@@ -1,5 +1,5 @@
 # khinsider_downloader
-Allows for batch downloads of music from KH Insider using Selenium Webdriver. Also updates the ID3 tags and cover image of each song when downloading album. 
+Allows for batch downloads of music from KH Insider using BeautifulSoup. Also updates the ID3 tags and cover image of each song when downloading album. 
 
 ##Usage: 
 `python khinsider_downloader.py ["<regex>"] <KH Insider album URL>`
