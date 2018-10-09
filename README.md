@@ -2,17 +2,10 @@
 Allows for batch downloads of music from KH Insider using Selenium Webdriver. Also updates the ID3 tags and cover image of each song when downloading album. 
 
 ##Usage: 
-`python khinsider_download.py ["<regex>"] <KH Insider album URL>`
+`python khinsider_downloader.py ["<regex>"] <KH Insider album URL>`
 
-KH Insider's file names for their songs are incredibly inconsistent, so I've been unable to create a way to parse them universally. However, there is a pattern that is more common than others so if the song titles look like this, then the regex argument is not needed as the script's default regex will be capable of handling them.
-
-```
-01.twilight princess theme.mp3
-
-03 twilight princess theme.mp3
-```
-
-However, there have been other irregular patterns spotted that will not result in pretty titles with the default regex, like these
+KH Insider's file names for their songs are incredibly inconsistent, so I've been unable to create a way to parse them universally.
+They've started being better about their file names so I changed the default regex to just use whatever title you see on the web page. However, you will occassionally see irregular titles like this, which will necesitate the use of a regex to make the titles and file names look pretty.
 
 ```
 EON-01-James-Bond-Theme.mp3
@@ -27,6 +20,12 @@ EON-\d+-(.*)\.mp3 ------------> This will turn "EON-01-James-Bond-Theme.mp3" int
 
 \d+\s-\s(.*)\s-\s.*\.mp3 -----> This will turn "01 - going down on it - hot action cop.mp3" into "going down on it"
 ```
+
+So the command will look like this: 
+
+```python khinsider_downloader.py "\d+\s-\s(.*)\s-\s.*\.mp3" <url>```
+
+Don't forget the quotations around your regex or your shell might interpret your command in an unintended manner.
 
 ##A short lesson on regular expressions that will most apply to you:
 
@@ -48,8 +47,6 @@ EON-\d+-(.*)\.mp3 ------------> This will turn "EON-01-James-Bond-Theme.mp3" int
 * Requests (Install using "pip install requests" after installing python)
 * Eyed3 (Also install using "pip install eyed3" after installing python)
 * BeautifulSoup (Also install using "pip install beautifulsoup" after installing python)
-
-After downloading chromedriver, place it somewhere within your PATH so that selenium is able to find it. I typically place it inside of the Python install directory, which most commonly is C:\Python27. 
 
 ## Possible future features
 * Ability to specify which directory to download album to
